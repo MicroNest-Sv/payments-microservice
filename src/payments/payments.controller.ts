@@ -1,6 +1,13 @@
-import { Body, Controller, Get, Post, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 
-import { CreatePaymentSessionDto } from '@src/stripe/dto';
+import { CreatePaymentSessionDto } from './dto';
 import { PaymentsService } from './payments.service';
 
 @Controller('payments')

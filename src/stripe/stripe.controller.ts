@@ -1,31 +1,21 @@
-import {
-  Body,
-  Controller,
-  Headers,
-  Post,
-  RawBody,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Controller, Headers, Post, RawBody } from '@nestjs/common';
 
+import { PaymentsService } from '@src/payments/payments.service';
 import { StripeService } from './stripe.service';
-import { CreatePaymentSessionDto } from './dto';
 
 @Controller('stripe')
 export class StripeController {
-  constructor(private readonly stripeService: StripeService) {}
-
-  @Post('checkout')
-  @UsePipes(new ValidationPipe({ whitelist: true }))
-  createPaymentSession(@Body() dto: CreatePaymentSessionDto) {
-    return this.stripeService.createPaymentSession(dto);
-  }
+  constructor(
+    private readonly stripeService: StripeService,
+    private readonly paymentsService: PaymentsService,
+  ) {}
 
   @Post('webhook')
   handleWebhook(
     @RawBody() rawBody: Buffer,
     @Headers('stripe-signature') signature: string,
   ) {
-    return this.stripeService.handleWebhook(rawBody, signature);
+    const event = this.stripeService.constructWebhookEvent(rawBody, signature);
+    return this.paymentsService.handleStripeEvent(event);
   }
 }
