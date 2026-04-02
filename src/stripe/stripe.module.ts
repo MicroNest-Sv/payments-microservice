@@ -7,7 +7,10 @@ import { StripeService } from './stripe.service';
 import { StripeController } from './stripe.controller';
 
 @Module({
-  imports: [ConfigModule.forFeature(stripeConfig), forwardRef(() => PaymentsModule)],
+  imports: [
+    ConfigModule.forFeature(stripeConfig),
+    forwardRef(() => PaymentsModule),
+  ],
   controllers: [StripeController],
   providers: [StripeService],
   exports: [StripeService],

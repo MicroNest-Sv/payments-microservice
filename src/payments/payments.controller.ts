@@ -25,13 +25,8 @@ export class PaymentsController {
     return { message: 'Payment successful' };
   }
 
-  @Get('failure')
-  getFailure() {
-    return { message: 'Payment failed' };
-  }
-
-  @Get('cancelled')
-  getCancelled() {
+  @Get('cancel')
+  getCancel() {
     return { message: 'Payment cancelled' };
   }
 }

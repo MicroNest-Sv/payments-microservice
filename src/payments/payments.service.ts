@@ -37,7 +37,9 @@ export class PaymentsService {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object;
-        this.logger.log(`Payment completed for order: ${session.metadata?.orderId}`);
+        this.logger.log(
+          `Payment completed for order: ${session.metadata?.orderId}`,
+        );
         // TODO: actualizar orden en BD, notificar por NATS, etc.
         return { status: 'completed', sessionId: session.id };
       }
