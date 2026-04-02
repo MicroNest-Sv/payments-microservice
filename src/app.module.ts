@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 
 import { appConfig } from './config';
 import { PaymentsModule } from './payments/payments.module';
+import { StripeModule } from './stripe/stripe.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { PaymentsModule } from './payments/payments.module';
       load: [appConfig],
     }),
     PaymentsModule,
+    StripeModule,
   ],
   controllers: [],
   providers: [],
