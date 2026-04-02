@@ -9,7 +9,7 @@ async function bootstrap() {
 
   const appConfigValues = appConfig();
 
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { rawBody: true });
 
   await app.listen(appConfigValues.port);
 

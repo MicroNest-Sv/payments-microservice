@@ -1,5 +1,6 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UsePipes, ValidationPipe } from '@nestjs/common';
 
+import { CreatePaymentSessionDto } from '@src/stripe/dto';
 import { PaymentsService } from './payments.service';
 
 @Controller('payments')
@@ -7,8 +8,9 @@ export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
   @Post('create-payment')
-  createPayment() {
-    return this.paymentsService.createPayment();
+  @UsePipes(new ValidationPipe({ whitelist: true }))
+  createPayment(@Body() dto: CreatePaymentSessionDto) {
+    return this.paymentsService.createPayment(dto);
   }
 
   @Get('success')
@@ -24,11 +26,5 @@ export class PaymentsController {
   @Get('cancelled')
   getCancelled() {
     return { message: 'Payment cancelled' };
-  }
-
-  @Post('webhook')
-  handleWebhook() {
-    // Aquí iría la lógica para manejar el webhook de pagos
-    return { message: 'Webhook received' };
   }
 }

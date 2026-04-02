@@ -9,5 +9,6 @@ import { StripeController } from './stripe.controller';
   imports: [ConfigModule.forFeature(stripeConfig)],
   controllers: [StripeController],
   providers: [StripeService],
+  exports: [StripeService],
 })
 export class StripeModule {}

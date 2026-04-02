@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
 
+import { StripeService } from '@src/stripe/stripe.service';
+import { type CreatePaymentSessionDto } from '@src/stripe/dto';
+
 @Injectable()
 export class PaymentsService {
-  createPayment() {
-    // Aquí iría la lógica para crear un pago, por ejemplo, interactuar con una base de datos o un servicio de terceros.
-    return { message: 'Payment created successfully' };
+  constructor(private readonly stripeService: StripeService) {}
+
+  createPayment(dto: CreatePaymentSessionDto) {
+    return this.stripeService.createPaymentSession(dto);
   }
 }
