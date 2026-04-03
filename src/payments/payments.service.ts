@@ -35,20 +35,17 @@ export class PaymentsService {
 
   handleStripeEvent(event: Stripe.Event) {
     switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object;
+      case 'payment_intent.succeeded': {
+        // Se dispara una sola vez cuando el pago se resuelve exitosamente,
+        // sin importar cuántos intentos de cobro (charges) haya tomado.
+        // Nota: charge.succeeded se dispara por cada cobro individual exitoso,
+        // lo que podría causar procesamiento duplicado en caso de reintentos.
+        const paymentIntent = event.data.object;
         this.logger.log(
-          `Payment completed for order: ${session.metadata?.orderId}`,
+          `Payment succeeded for order: ${paymentIntent.metadata?.orderId}`,
         );
         // TODO: actualizar orden en BD, notificar por NATS, etc.
-        return { status: 'completed', sessionId: session.id };
-      }
-
-      case 'checkout.session.expired': {
-        const session = event.data.object;
-        this.logger.warn(`Payment expired for session: ${session.id}`);
-        // TODO: marcar orden como expirada
-        return { status: 'expired', sessionId: session.id };
+        return { status: 'succeeded', paymentIntentId: paymentIntent.id };
       }
 
       default:
