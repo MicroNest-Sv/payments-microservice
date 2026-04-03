@@ -8,8 +8,8 @@ const appEnvSchema = z.object({
   STRIPE_WEBHOOK_SECRET: z
     .string()
     .nonempty('STRIPE_WEBHOOK_SECRET is required'),
-  STRIPE_SUCCESS_URL: z.string().url('STRIPE_SUCCESS_URL must be a valid URL'),
-  STRIPE_CANCEL_URL: z.string().url('STRIPE_CANCEL_URL must be a valid URL'),
+  STRIPE_SUCCESS_URL: z.url('STRIPE_SUCCESS_URL must be a valid URL'),
+  STRIPE_CANCEL_URL: z.url('STRIPE_CANCEL_URL must be a valid URL'),
 });
 
 type StripeEnv = z.infer<typeof appEnvSchema>;
