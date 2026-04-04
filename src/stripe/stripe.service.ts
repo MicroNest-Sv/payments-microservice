@@ -33,6 +33,10 @@ export class StripeService {
     return session;
   }
 
+  async retrieveCharge(chargeId: string) {
+    return this.stripe.charges.retrieve(chargeId);
+  }
+
   constructWebhookEvent(rawBody: Buffer, signature: string): Stripe.Event {
     return this.stripe.webhooks.constructEvent(
       rawBody,

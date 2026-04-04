@@ -1,7 +1,8 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
-import { PaymentsModule } from '@src/payments/payments.module';
+import { PaymentsModule } from '@src/payments';
+
 import { stripeConfig } from './config';
 import { StripeService } from './stripe.service';
 import { StripeController } from './stripe.controller';

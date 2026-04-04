@@ -1,14 +1,21 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
 import Stripe from 'stripe';
 
+import { NATS_SERVICE } from '@src/config';
 import { StripeService } from '@src/stripe/stripe.service';
+
 import { type CreatePaymentSessionDto } from './dto';
 
 @Injectable()
 export class PaymentsService {
   private readonly logger = new Logger(PaymentsService.name);
 
-  constructor(private readonly stripeService: StripeService) {}
+  constructor(
+    @Inject(NATS_SERVICE) private readonly natsClient: ClientProxy,
+
+    private readonly stripeService: StripeService,
+  ) {}
 
   async createPayment(dto: CreatePaymentSessionDto) {
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] =
@@ -33,19 +40,26 @@ export class PaymentsService {
     };
   }
 
-  handleStripeEvent(event: Stripe.Event) {
+  async handleStripeEvent(event: Stripe.Event) {
     switch (event.type) {
       case 'payment_intent.succeeded': {
-        // Se dispara una sola vez cuando el pago se resuelve exitosamente,
-        // sin importar cuántos intentos de cobro (charges) haya tomado.
-        // Nota: charge.succeeded se dispara por cada cobro individual exitoso,
-        // lo que podría causar procesamiento duplicado en caso de reintentos.
         const paymentIntent = event.data.object;
-        this.logger.log(
-          `Payment succeeded for order: ${paymentIntent.metadata?.orderId}`,
+
+        const charge = await this.stripeService.retrieveCharge(
+          paymentIntent.latest_charge as string,
         );
-        // TODO: actualizar orden en BD, notificar por NATS, etc.
-        return { status: 'succeeded', paymentIntentId: paymentIntent.id };
+
+        this.natsClient.emit('payment.succeeded', {
+          orderId: paymentIntent.metadata?.orderId,
+          paymentIntentId: paymentIntent.id,
+          receiptUrl: charge.receipt_url,
+        });
+
+        return {
+          status: 'succeeded',
+          paymentIntentId: paymentIntent.id,
+          receiptUrl: charge.receipt_url,
+        };
       }
 
       default:
