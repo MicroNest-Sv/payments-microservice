@@ -14,34 +14,42 @@ async function bootstrap() {
 
   const appConfigValues = appConfig();
 
-  // 1. Crear la app HTTP (necesaria para webhooks de Stripe)
+  // Crear la app HTTP (necesaria para webhooks de Stripe)
   const app = await NestFactory.create(AppModule, { rawBody: true });
 
-  // 2. Conectar el transporte NATS como microservicio híbrido
-  app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.NATS,
-    options: {
-      servers: appConfigValues.natsServers,
+  // Conectar el transporte NATS como microservicio híbrido
+  app.connectMicroservice<MicroserviceOptions>(
+    {
+      transport: Transport.NATS,
+      options: {
+        servers: appConfigValues.natsServers,
+      },
     },
-  });
+    { inheritAppConfig: true },
+  );
 
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
       exceptionFactory: (errors) => {
-        const messages = errors.map((error) =>
-          Object.values(error.constraints ?? {}).join(', '),
-        );
+        const extractMessages = (
+          errors: import('class-validator').ValidationError[],
+        ): string[] =>
+          errors.flatMap((error) => [
+            ...Object.values(error.constraints ?? {}),
+            ...extractMessages(error.children ?? []),
+          ]);
+
         return new RpcException({
           status: HttpStatus.BAD_REQUEST,
-          message: messages,
+          message: extractMessages(errors),
         });
       },
     }),
   );
 
-  // 3. Iniciar todos los microservicios conectados (NATS) y luego el HTTP
+  // Iniciar todos los microservicios conectados (NATS) y luego el HTTP
   await app.startAllMicroservices();
   await app.listen(appConfigValues.port);
 
